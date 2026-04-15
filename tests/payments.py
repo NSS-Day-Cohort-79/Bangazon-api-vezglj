@@ -23,7 +23,6 @@ class PaymentTests(APITestCase):
         }
         response = self.client.post(url, data, format="json")
         json_response = json.loads(response.content)
-        print(json_response)
         self.token = json_response["token"]
         self.customer_id = json_response["id"]
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -63,11 +62,11 @@ class PaymentTests(APITestCase):
         payment.customer_id = self.customer_id
         payment.save()
 
-        # DELETE the game you just created
+        # DELETE the payment you just created
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
-        response = self.client.delete(f"/payments/{payment.id}")
+        response = self.client.delete(f"/paymenttypes/{payment.id}")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        # GET the game again to verify you get a 404 response
-        response = self.client.get(f"/payments/{payment.id}")
+        # GET the payment again to verify you get a 404 response
+        response = self.client.get(f"/paymenttypes/{payment.id}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
