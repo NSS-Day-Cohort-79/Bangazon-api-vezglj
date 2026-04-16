@@ -107,27 +107,18 @@ class ProductTests(APITestCase):
     # TODO: Product can be rated. Assert average rating exists.
 
     def test_rate_product(self):
-        # create a product
+        """create a product"""
         self.test_create_product()
 
+        """verify average_rating key exists"""
         url = "/products/1"
-        data = {
-            "name": "Kite",
-            "price": 24.99,
-            "quantity": 40,
-            "description": "It flies very high",
-            "category_id": 1,
-            "created_date": datetime.date.today(),
-            "location": "Pittsburgh",
-            "can_be_rated": True,
-        }
-
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
-        response = self.client.put(url, data, format="json")
+        response = self.client.get(url, None, format="json")
         json_response = json.loads(response.content)
-        print(json_response)
+        self.assertEqual(json_response["average_rating"], 0)
 
-        # self.assertTrue(hasattr(json_response, "can_be_rated"))
+        """ add ratings to product"""
+        url = "products/1/rate-product"
+
         # add rating
 
         # assert productrating exists
