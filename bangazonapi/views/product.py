@@ -1,9 +1,12 @@
 """View module for handling requests about products"""
 
+from urllib import request
+
 from rest_framework.decorators import action
 from bangazonapi.models.recommendation import Recommendation
 import base64
 from django.core.files.base import ContentFile
+from django.shortcuts import get_object_or_404
 from django.http import HttpResponseServerError
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
@@ -169,6 +172,10 @@ class Products(ViewSet):
             product = Product.objects.get(pk=pk)
             serializer = ProductSerializer(product, context={"request": request})
             return Response(serializer.data)
+
+        except Product.DoesNotExist as ex:
+            return Response({"message": ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
+
         except Exception as ex:
             return HttpResponseServerError(ex)
 
