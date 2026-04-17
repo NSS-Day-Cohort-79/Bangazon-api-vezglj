@@ -7,8 +7,18 @@ from rest_framework.test import APITestCase
 class OrderTests(APITestCase):
 
     # Add any fixtures you want to run to build the test database
-    fixtures = ['users', 'tokens', 'productrating', 'product', 'product_category', 'payment', 'order', 'order_product', 'favoritesellers', 'customers' ]
-
+    fixtures = [
+        "users",
+        "tokens",
+        "productrating",
+        "product",
+        "product_category",
+        "payment",
+        "order",
+        "order_product",
+        "favoritesellers",
+        "customers",
+    ]
 
     def setUp(self) -> None:
         """
@@ -103,7 +113,12 @@ class OrderTests(APITestCase):
         """
         # Add payment to order
         url = "/paymenttypes"
-        data = {"payment_id": 1}
+        data = {
+            "merchant_name": "American Express",
+            "account_number": "111-1111-1111",
+            "expiration_date": "2024-12-31",
+            "create_date": datetime.date.today(),
+        }
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
         response = self.client.post(url, data, format="json")
 
@@ -117,17 +132,16 @@ class OrderTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json_response["id"], 1)
-    
 
     # TODO: New line item is not added to closed order
     def test_add_product_to_closed_order(self):
         # Step 1: Create a payment type
         url = "/paymenttypes"
         data = {
-        "merchant_name": "American Express",
-        "account_number": "111-1111-1111",
-        "expiration_date": "2024-12-31",
-        "create_date": datetime.date.today(),
+            "merchant_name": "American Express",
+            "account_number": "111-1111-1111",
+            "expiration_date": "2024-12-31",
+            "create_date": datetime.date.today(),
         }
 
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
@@ -172,6 +186,6 @@ class OrderTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(json_response["id"], closed_order_id)
         self.assertEqual(json_response["size"], 1)
-    
+
         # Step 8: Assert the new cart only has 1 item
         self.assertEqual(len(json_response["lineitems"]), 1)
