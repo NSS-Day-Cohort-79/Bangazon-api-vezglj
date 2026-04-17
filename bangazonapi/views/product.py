@@ -1,7 +1,7 @@
 """View module for handling requests about products"""
 
 from rest_framework.decorators import action
-from bangazonapi.models.recommendation import Recommendation
+from bangazonapi.models import Rating, Recommendation, ProductRating
 import base64
 from django.core.files.base import ContentFile
 from django.http import HttpResponseServerError
@@ -311,4 +311,19 @@ class Products(ViewSet):
 
             return Response(None, status=status.HTTP_204_NO_CONTENT)
 
+        return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    @action(methods=["post"], detail=True, url_path="rate-product")
+    def rate_product(self, request, pk=None):
+        """Add rating to a product"""
+
+        product = Product.objects.get(pk=pk)
+        customer = Customer.objects.get(user=request.auth.user)
+        rating = Rating.object.get(request.data.score)
+
+        if request.method == "POST":
+            ProductRating.objects.create(
+                product=product, customer=customer, rating=rating
+            )
+            return Response(None, status=status.HTTP_201_CREATED)
         return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
