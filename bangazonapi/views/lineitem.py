@@ -63,7 +63,7 @@ class LineItems(ViewSet):
 
     def destroy(self, request, pk=None):
         """
-        @api {DELETE} /cart/:id DELETE line item from cart
+        @api {DELETE} /lineitems/:id DELETE line item from cart
         @apiName RemoveLineItem
         @apiGroup ShoppingCart
 
@@ -71,7 +71,7 @@ class LineItems(ViewSet):
         @apiHeaderExample {String} Authorization
             Token 9ba45f09651c5b0c404f37a2d2572c026c146611
 
-        @apiParam {id} id Product Id to remove from cart
+        @apiParam {id} id order product Id to remove from cart
         @apiSuccessExample {json} Success
             HTTP/1.1 204 No Content
         """
