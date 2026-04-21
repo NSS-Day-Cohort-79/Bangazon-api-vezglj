@@ -1,7 +1,6 @@
 """View module for handling requests about products"""
 
 from urllib import request
-
 from django.core.exceptions import ValidationError
 from rest_framework.decorators import action
 from bangazonapi.models.recommendation import Recommendation
