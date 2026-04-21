@@ -1,7 +1,7 @@
 """View module for handling requests about products"""
 
 from urllib import request
-
+from django.core.exceptions import ValidationError
 from rest_framework.decorators import action
 from bangazonapi.models.recommendation import Recommendation
 import base64
@@ -122,6 +122,11 @@ class Products(ViewSet):
             )
 
             new_product.image_path = data
+
+        try:
+            new_product.full_clean()
+        except ValidationError as ex:
+            return Response({"message": ex.message_dict}, status=status.HTTP_400_BAD_REQUEST)
 
         new_product.save()
 
