@@ -2,7 +2,7 @@ from rest_framework import serializers, status
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 
-from bangazonapi.models import Store
+from bangazonapi.models import Store, stores
 
 
 class StoreSerializer(serializers.ModelSerializer):
@@ -14,25 +14,18 @@ class StoreSerializer(serializers.ModelSerializer):
 class StoreView(ViewSet):
 
     def list(self, request):
-        """
-        GET /stores
-        Return current user's store (if exists)
-        """
-        try:
-            store = request.user.store
-            serializer = StoreSerializer(store, context={"request": request})
-            return Response(serializer.data)
-        except Store.DoesNotExist:
-            return Response(
-                {"message": "No store found"}, status=status.HTTP_404_NOT_FOUND
-            )
+        stores = Store.objects.all()
+        serializer = StoreSerializer(stores, many=True, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
-        print("request.data:", request.data)
-        print("request.user:", request.user)
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Authentication required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
-        if hasattr(request.user, "store"):
-            print("user already has a store")
+        if Store.objects.filter(owner=request.user).exists():
             return Response(
                 {"error": "You already have a store"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -40,9 +33,6 @@ class StoreView(ViewSet):
 
         name = request.data.get("name")
         description = request.data.get("description")
-
-        print("name:", name)
-        print("description:", description)
 
         if not name or not description:
             return Response(
