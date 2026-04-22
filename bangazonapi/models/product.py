@@ -7,7 +7,6 @@ from .productcategory import ProductCategory
 from .orderproduct import OrderProduct
 from .productrating import ProductRating
 
-
 class Product(SafeDeleteModel):
 
     _safedelete_policy = SOFT_DELETE

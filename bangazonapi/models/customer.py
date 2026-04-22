@@ -18,3 +18,11 @@ class Customer(models.Model):
     @recommends.setter
     def recommends(self, value):
         self.__recommends = value
+    
+    @property
+    def liked_products(self):
+        return self.__liked_products
+    
+    @liked_products.setter
+    def liked_products(self, value):
+        self.__liked_products = value
