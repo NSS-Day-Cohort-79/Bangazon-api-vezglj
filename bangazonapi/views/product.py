@@ -316,7 +316,8 @@ class Products(ViewSet):
                serializer = ProductSerializer(
                    category_products, many=True, context={"request": request}
                 )
-               grouped_products.append({
+               if category_products.exists():
+                grouped_products.append({
                    "category": category.name,
                    "products": serializer.data
                })
