@@ -20,6 +20,15 @@ from bangazonapi.models.productlike import ProductLike
 class ProductSerializer(serializers.ModelSerializer):
     """JSON serializer for products"""
 
+    is_liked = serializers.SerializerMethodField()
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request and request.auth:
+            customer = Customer.objects.get(user=request.auth.user)
+            return ProductLike.objects.filter(customer=customer, product=obj).exists()
+        return False
+
     class Meta:
         model = Product
         fields = (
