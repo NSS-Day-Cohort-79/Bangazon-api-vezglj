@@ -41,7 +41,7 @@ class ProductTests(APITestCase):
         url = "/products"
         data = {
             "name": "Kite",
-            "price": 14.99,
+            "price": 17500.00,
             "quantity": 60,
             "description": "It flies high",
             "category_id": 1,
@@ -53,7 +53,7 @@ class ProductTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(json_response["name"], "Kite")
-        self.assertEqual(json_response["price"], 14.99)
+        self.assertEqual(json_response["price"], 17500.00)
         self.assertEqual(json_response["quantity"], 60)
         self.assertEqual(json_response["description"], "It flies high")
         self.assertEqual(json_response["location"], "Pittsburgh")
@@ -102,7 +102,20 @@ class ProductTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(json_response), 3)
 
-    # TODO: Delete product
+    def test_delete_product(self):
+        """
+        Ensure we can delete a product.
+        """
+        self.test_create_product()
+
+        url = "/products/1"
+
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
+        response = self.client.delete(url, None, format="json")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        response = self.client.get(url, None, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # TODO: Product can be rated. Assert average rating exists.
 

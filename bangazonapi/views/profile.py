@@ -64,7 +64,7 @@ class Profile(ViewSet):
                         "customer": "http://localhost:8000/customers/7"
                     }
                 ],
-                "recommends": [
+                "user_recommends": [
                     {
                         "product": {
                             "id": 32,
@@ -79,12 +79,33 @@ class Profile(ViewSet):
                             }
                         }
                     }
+                ],
+                "recommended_to_user": [
+                    {
+                        "product": {
+                            "id": 32,
+                            "name": "DB9"
+                        },
+                        "recommender": {
+                            "id": 5,
+                            "user": {
+                                "first_name": "Joe",
+                                "last_name": "Shepherd",
+                                "email": "joe@joeshepherd.com"
+                            }
+                        }
+                    }
                 ]
             }
         """
         try:
             current_user = Customer.objects.get(user=request.auth.user)
-            current_user.recommends = Recommendation.objects.filter(recommender=current_user)
+            current_user.user_recommends = Recommendation.objects.filter(
+                recommender=current_user
+            )
+            current_user.recommended_to_user = Recommendation.objects.filter(
+                customer=current_user
+            )
 
             serializer = ProfileSerializer(
                 current_user, many=False, context={"request": request}
@@ -186,7 +207,6 @@ class Profile(ViewSet):
                     open_order, many=False, context={"request": request}
                 ).data
                 cart["order"]["size"] = len(cart["order"]["lineitems"])
-
 
             except Order.DoesNotExist as ex:
                 return Response(
@@ -368,7 +388,7 @@ class ProfileProductSerializer(serializers.ModelSerializer):
 
 
 class RecommenderSerializer(serializers.ModelSerializer):
-    """JSON serializer for recommendations"""
+    """JSON serializer for recommendations by current user"""
 
     customer = CustomerSerializer()
     product = ProfileProductSerializer()
@@ -381,6 +401,20 @@ class RecommenderSerializer(serializers.ModelSerializer):
         )
 
 
+class RecommendedSerializer(serializers.ModelSerializer):
+    """JSON serializer for recommendations for current user"""
+
+    recommender = CustomerSerializer()
+    product = ProfileProductSerializer()
+
+    class Meta:
+        model = Recommendation
+        fields = (
+            "product",
+            "recommender",
+        )
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     """JSON serializer for customer profile
 
@@ -389,7 +423,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     """
 
     user = UserSerializer(many=False)
-    recommends = RecommenderSerializer(many=True)
+    user_recommends = RecommenderSerializer(many=True)
+    recommended_to_user = RecommendedSerializer(many=True)
 
     class Meta:
         model = Customer
@@ -400,7 +435,8 @@ class ProfileSerializer(serializers.ModelSerializer):
             "phone_number",
             "address",
             "payment_types",
-            "recommends",
+            "user_recommends",
+            "recommended_to_user",
         )
         depth = 1
 

@@ -31,7 +31,7 @@ class PaymentTests(APITestCase):
         """
         Ensure we can add a payment type for a customer.
         """
-        # Add product to order
+        # Add payment to order
         url = "/paymenttypes"
         data = {
             "merchant_name": "American Express",

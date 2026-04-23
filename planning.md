@@ -1,3 +1,151 @@
+# Bangazon Ticket Priority Plan — Updated
+
+> **Updated plan as of Sprint 2.** Learning Spikes (#1, #2) moved out of Sprint 1 per instructor guidance. Completed tickets marked below.
+
+## Overview
+
+| Sprint | Days | Focus |
+|--------|------|-------|
+| **Sprint 1** | Days 1–5 | Fix all critical bugs |
+| **Sprint 2** | Days 6–10 | Learning spikes + write tests + build core features |
+| **Sprint 3** | Days 11–15 | Dependent features + UI fixes + reports (stretch) |
+
+---
+
+## Sprint 1 — Days 1–5
+### Goal: Get the app working. Nothing else can be built on top of broken code.
+
+### Days 1–5 — Fix All Critical Bugs (Wave 1)
+
+| Person | Ticket(s) | What's broken | Status |
+|--------|-----------|--------------|--------|
+| **Dev 1** | **#5** | Bug: Same user profile always returned | ✅ Done |
+| **Dev 2** | **#6** | Bug: Division by zero error on products | ✅ Done |
+| **Dev 3** | **#4** | Bug: Products keep getting added to the last closed order | ✅ Done |
+| **Dev 4** | **#8** + **#3** | Bug: Can't remove item from cart + Cart has duplicate line item keys | #8 In Progress / #3 ✅ Done |
+| **Dev 5** | **#10** + **#9** | Bug: All payment types returned + Payment expiration dates incorrect | ✅ Done |
+
+---
+
+## Sprint 2 — Days 6–10
+### Goal: Learning spikes, confirm fixes with tests, then build core features.
+
+### Day 6 — Learning Spikes (Whole Team, Split Into Two Groups)
+
+Now that bugs are fixed, spend Day 6 on research before building features. Split into two groups and present findings at the end of the day.
+
+| Group | Ticket # | Topic | Who |
+|-------|----------|-------|-----|
+| **Group A** (2–3 people) | **#1** | Learning Spike: Introduction to TypeScript | Devs 1, 2, 3 |
+| **Group B** (2 people) | **#2** | Learning Spike: TanStack Query | Devs 4, 5 |
+
+> **What to cover:**
+> - Group A (#1): What is TypeScript? How is it different from JavaScript? Show one example of a typed function.
+> - Group B (#2): What is TanStack Query? What problem does it solve? Show one example of a `useQuery` call.
+
+---
+
+### Days 6–7 — Write Tests (Wave 3)
+
+| Person | Ticket # | Test to write | File | Status |
+|--------|----------|--------------|------|--------|
+| **Dev 1** | **#19** | New line item is NOT added to a closed order | `tests/order.py` | ✅ Done |
+| **Dev 2** | **#22** | Product can be rated; assert `avg_rating` key exists with correct value | `tests/product.py` | Not started |
+| **Dev 3** | **#18** | Complete order by adding a payment type | `tests/order.py` | ✅ Done |
+| **Dev 4** | **#20** | Delete payment type | `tests/payments.py` | ✅ Done |
+| **Dev 5** | **#21** | Delete product (verify it no longer appears) | `tests/product.py` | ✅ Done |
+
+---
+
+### Days 7–10 — Core Features (Wave 4)
+
+| Person | Ticket # | What to build | Est. Days |
+|--------|----------|--------------|-----------|
+| **Dev 1 + Dev 2** (pair) | **#23** | Feature: Users can create a store — POST endpoint for store name + description. Unlocks #16, #24, #36. | 2 days |
+| **Dev 3** | **#24** | Feature: Sellers should have a Store view. Depends on #23 being merged first. | 1–2 days |
+| **Dev 4** | **#14** | Feature: Increase max price from $10,000 to $17,500 — change one number in the model validator. Do this first (~1 hour), then help with #23. | 1 hour + help |
+| **Dev 5** | Help with **#23** or start Wave 5 | Once tests (#21) are done, join Dev 1 + Dev 2 on store creation or start an early Wave 5 ticket (#17, #15, or #7) | — |
+
+---
+
+### Sprint 2 Stretch — Start Wave 5 If Time Allows
+
+| Ticket # | Title | Est. Days |
+|----------|-------|-----------|
+| **#17** | Feature: Users can like/dislike products | 1 day |
+| **#15** | Feature: Get products by location (`?location=`) | half a day |
+| **#7** | Bug: Incorrect result for minimum products sold (`?number_sold=`) | half a day |
+
+---
+
+## Sprint 3 — Days 11–15
+### Goal: Finish dependent features, fix frontend bugs, and complete reports as stretch goals.
+
+### Days 11–12 — Dependent Features (Wave 5)
+
+| Person | Ticket # | What to build | Depends on | Est. Days |
+|--------|----------|--------------|------------|-----------|
+| **Dev 1** | **#29** | Feature: Add recommended products to user profile | #5 fixed | 1–2 days |
+| **Dev 2** | **#17** | Feature: Users can like/dislike products | Wave 1 bugs fixed | 1 day |
+| **Dev 3** | **#16** | Feature: Users can favorite a store | #23 done | 1 day |
+| **Dev 4** | **#11** | Feature: Initial product view — 5 most recent items per category | Wave 1 bugs fixed | 1–2 days |
+| **Dev 5** | **#12** + **#7** + **#15** | Get products over min price + fix number_sold filter + get products by location | #14 done, Wave 1 bugs fixed | 1–2 days |
+
+---
+
+### Days 12–14 — Frontend + Cart/Order Fixes (Wave 6)
+
+| Person | Ticket # | What to fix | Depends on | Est. Days |
+|--------|----------|------------|------------|-----------|
+| **Dev 1** | **#33** | Bug: Completing an order doesn't work (frontend checkout flow) | #4, #9, #10 fixed | 1–2 days |
+| **Dev 2** | **#34** + **#35** | Bug: Can't remove cart items (frontend) + Past orders not displaying | #8 fixed, #33 done | 1–2 days |
+| **Dev 3** | **#32** | Feature: Delete all items in cart ("Delete Order" button) | Wave 1 cart bugs fixed | 1 day |
+| **Dev 4** | **#30** | Feature: Filter products by category | #11 done | half a day |
+| **Dev 5** | **#31** | Feature: Filter products by price | #12 done | half a day |
+
+---
+
+### Days 14–15 — Reports (Wave 7, Stretch Goals)
+
+| Person | Ticket # | Report | Depends on | Est. Days |
+|--------|----------|--------|------------|-----------|
+| **Dev 1** | **#36** | Feature: List of stores with items currently listed | #23, #24 done | 1 day |
+| **Dev 2** | **#26** + **#25** | Inexpensive products report + Expensive products report | #14 done | half a day each |
+| **Dev 3** | **#13** | REPORT: Incomplete orders | Wave 1 done | half a day |
+| **Dev 4** | **#27** | REPORT: Completed orders | #33 working | half a day |
+| **Dev 5** | **#28** | REPORT: Favorited sellers by customer | #16 done | half a day |
+
+---
+
+## Updated Sprint Summary
+
+### Sprint 1 (Days 1–5)
+```
+Days 1–5  — Dev 1: #5 ✅ | Dev 2: #6 ✅ | Dev 3: #4 ✅ | Dev 4: #8 (in progress) + #3 ✅ | Dev 5: #10 ✅ + #9 ✅
+```
+
+### Sprint 2 (Days 6–10)
+```
+Day 6     — All 5 devs: learning spikes in 2 groups (#1 TypeScript, #2 TanStack Query), end-of-day presentations
+Days 6–7  — Dev 1: #19 ✅ | Dev 2: #22 | Dev 3: #18 ✅ | Dev 4: #20 ✅ | Dev 5: #21 ✅
+Days 7–10 — Devs 1+2 pair on #23 | Dev 3: #24 | Dev 4: #14 then help | Dev 5: help #23 or early Wave 5
+```
+
+### Sprint 3 (Days 11–15)
+```
+Days 11–12 — Dev 1: #29 | Dev 2: #17 | Dev 3: #16 | Dev 4: #11 | Dev 5: #12+#7+#15
+Days 12–14 — Dev 1: #33 | Dev 2: #34+#35 | Dev 3: #32 | Dev 4: #30 | Dev 5: #31
+Days 14–15 — Dev 1: #36 | Dev 2: #26+#25 | Dev 3: #13 | Dev 4: #27 | Dev 5: #28 (all stretch)
+```
+
+---
+
+<br>
+
+---
+
+# ORIGINAL PLAN (for reference)
+
 # Bangazon Ticket Priority Plan
 
 ## Overview
