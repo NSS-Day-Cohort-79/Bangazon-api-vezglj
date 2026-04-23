@@ -1,7 +1,7 @@
 """View module for handling requests about products"""
 
 from urllib import request
-
+from django.core.exceptions import ValidationError
 from rest_framework.decorators import action
 from bangazonapi.models.recommendation import Recommendation
 import base64
@@ -15,7 +15,7 @@ from rest_framework import status
 from bangazonapi.models import Product, Customer, ProductCategory
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.parsers import MultiPartParser, FormParser
-
+from bangazonapi.models.productlike import ProductLike
 
 class ProductSerializer(serializers.ModelSerializer):
     """JSON serializer for products"""
@@ -122,6 +122,11 @@ class Products(ViewSet):
             )
 
             new_product.image_path = data
+
+        try:
+            new_product.full_clean()
+        except ValidationError as ex:
+            return Response({"message": ex.message_dict}, status=status.HTTP_400_BAD_REQUEST)
 
         new_product.save()
 
@@ -274,6 +279,8 @@ class Products(ViewSet):
         order = self.request.query_params.get("order_by", None)
         direction = self.request.query_params.get("direction", None)
         number_sold = self.request.query_params.get("number_sold", None)
+        # Support filtering by location 
+        location = self.request.query_params.get("location", None)
 
         if order is not None:
             order_filter = order
@@ -293,11 +300,14 @@ class Products(ViewSet):
         if number_sold is not None:
 
             def sold_filter(product):
-                if product.number_sold <= int(number_sold):
+                if product.number_sold >= int(number_sold):
                     return True
                 return False
 
             products = filter(sold_filter, products)
+
+        if location is not None:
+            products = products.filter(location__icontains=location)
 
         serializer = ProductSerializer(
             products, many=True, context={"request": request}
@@ -309,13 +319,82 @@ class Products(ViewSet):
         """Recommend products to other users"""
 
         if request.method == "POST":
-            rec = Recommendation()
-            rec.recommender = Customer.objects.get(user=request.auth.user)
-            rec.customer = Customer.objects.get(user__id=request.data["recipient"])
-            rec.product = Product.objects.get(pk=pk)
+            try:
+                rec = Recommendation()
+                rec.recommender = Customer.objects.get(user=request.auth.user)
+                rec.customer = Customer.objects.get(
+                    user__username=request.data["username"]
+                )
+                rec.product = Product.objects.get(pk=pk)
 
-            rec.save()
+                rec.save()
 
-            return Response(None, status=status.HTTP_204_NO_CONTENT)
+                return Response(None, status=status.HTTP_204_NO_CONTENT)
+            except Customer.DoesNotExist as ex:
+                return Response(None, status=status.HTTP_404_NOT_FOUND)
 
         return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+    @action(methods=["post", "delete"], detail=True)
+    def like(self, request, pk=None):
+        """
+        @api {POST} /products/:id/like  Like a product
+        @api {DELETE} /products/:id/like  Unlike a product
+        @apiName LikeProduct
+        @apiGroup Product
+
+        @apiHeader {String} Authorization Auth token
+
+        @apiSuccessExample {json} Success
+            HTTP/1.1 204 No Content
+        @apiError (404) {String} message  Not found message
+        """
+        product = get_object_or_404(Product, pk=pk)
+        customer = Customer.objects.get(user=request.auth.user)
+
+        if request.method == "POST":
+            _, created = ProductLike.objects.get_or_create(
+                customer=customer,
+                product=product
+            )
+            if not created:
+                return Response(
+                    {"message": "You have already liked this product."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            return Response(None, status=status.HTTP_204_NO_CONTENT)
+
+        if request.method == "DELETE":
+            try:
+                like = ProductLike.objects.get(customer=customer, product=product)
+                like.delete()
+                return Response(None, status=status.HTTP_204_NO_CONTENT)
+            except ProductLike.DoesNotExist:
+                return Response(
+                    {"message": "You have not liked this product."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+    @action(methods=["get"], detail=False)
+    def liked(self, request):
+        """
+        @api {GET} /products/liked  Get all products liked by the current user
+        @apiName GetLikedProducts
+        @apiGroup Product
+
+        @apiHeader {String} Authorization Auth token
+
+        @apiSuccess (200) {Object[]} products  Array of liked products
+        @apiSuccessExample {json} Success
+            [
+                {
+                    "id": 4,
+                    "name": "Kite",
+                    "price": 14.99,
+                    ...
+                }
+            ]
+        """
+        customer = Customer.objects.get(user=request.auth.user)
+        liked_products = Product.objects.filter(likes__customer=customer)
+        serializer = ProductSerializer(liked_products, many=True, context={"request": request})
+        return Response(serializer.data)
