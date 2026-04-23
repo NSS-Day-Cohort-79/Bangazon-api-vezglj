@@ -36,32 +36,36 @@ class StoreView(ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
-        print("request.data:", request.data)
-        print("request.user:", request.user)
 
         if not request.user.is_authenticated:
             return Response(
-                {"error": "Authentication required"},
+                {"detail": "Authentication required"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
         if Store.objects.filter(owner=request.user).exists():
             return Response(
-                {"error": "You already have a store"},
+                {
+                    "non_field_errors": [
+                        "You already have a store and cannot create another one."
+                    ]
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        name = request.data.get("name")
-        description = request.data.get("description")
+        name = request.data.get("name", "").strip()
+        description = request.data.get("description", "").strip()
 
-        print("name:", name)
-        print("description:", description)
+        errors = {}
 
-        if not name or not description:
-            return Response(
-                {"error": "Name and description are required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        if not name:
+            errors["name"] = ["Store name is required."]
+
+        if not description:
+            errors["description"] = ["Store description is required."]
+
+        if errors:
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
         new_store = Store.objects.create(
             owner=request.user, name=name, description=description
