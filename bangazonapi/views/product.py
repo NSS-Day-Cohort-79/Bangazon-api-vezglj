@@ -313,7 +313,7 @@ class Products(ViewSet):
 
         return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    @action(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True, url_path="rate-product")
     def rate_product(self, request, pk=None):
         """Add rating to a product"""
 
