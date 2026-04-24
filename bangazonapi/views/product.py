@@ -304,7 +304,7 @@ class Products(ViewSet):
                 products, many=True, context={"request": request}
             )
             return Response([{
-                "category": "Product matching filters",
+                "category": "Products matching filters",
                 "products": serializer.data
             }])
         else:
