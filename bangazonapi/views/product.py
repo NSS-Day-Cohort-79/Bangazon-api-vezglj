@@ -17,8 +17,17 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.parsers import MultiPartParser, FormParser
 from bangazonapi.models.productlike import ProductLike
 
+class ProductRatingSerializer(serializers.ModelSerializer):
+    """JSON serializer for ratings"""
+
+    model = ProductRating
+    fields = ("id", "product", "customer", "score", "review")
+
+
 class ProductSerializer(serializers.ModelSerializer):
     """JSON serializer for products"""
+
+    ratings = ProductRatingSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
@@ -34,6 +43,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "image_path",
             "average_rating",
             "can_be_rated",
+            "ratings",
         )
         depth = 1
 
@@ -279,7 +289,7 @@ class Products(ViewSet):
         order = self.request.query_params.get("order_by", None)
         direction = self.request.query_params.get("direction", None)
         number_sold = self.request.query_params.get("number_sold", None)
-        # Support filtering by location 
+        # Support filtering by location
         location = self.request.query_params.get("location", None)
 
         if order is not None:
@@ -330,7 +340,7 @@ class Products(ViewSet):
                 rec.save()
 
                 return Response(None, status=status.HTTP_204_NO_CONTENT)
-            except Customer.DoesNotExist as ex:
+            except Customer.DoesNotExist:
                 return Response(None, status=status.HTTP_404_NOT_FOUND)
 
         return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -340,16 +350,25 @@ class Products(ViewSet):
         """Add rating to a product"""
 
         if request.method == "POST":
-            rate = ProductRating()
-            rate.customer = Customer.objects.get(user=request.auth.user)
-            rate.product = Product.objects.get(pk=pk)
-            rate.rating = request.data["score"]
+            customer = Customer.objects.get(user=request.auth.user)
+            product = Product.objects.get(pk=pk)
 
+            """If rating does not exist, create a rating. """
+            try:
+                rate = ProductRating.objects.get(customer=customer, product=product)
+            except ProductRating.DoesNotExist:
+                rate = ProductRating()
+                rate.customer = customer
+                rate.product = product
+
+            rate.score = request.data["score"]
+            rate.review = request.data["review"]
+
+            rate.full_clean()
             rate.save()
-
             return Response(None, status=status.HTTP_201_CREATED)
         return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-    
+
     @action(methods=["post", "delete"], detail=True)
     def like(self, request, pk=None):
         """
@@ -389,6 +408,7 @@ class Products(ViewSet):
                     {"message": "You have not liked this product."},
                     status=status.HTTP_404_NOT_FOUND
                 )
+
     @action(methods=["get"], detail=False)
     def liked(self, request):
         """
