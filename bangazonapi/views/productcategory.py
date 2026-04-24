@@ -61,10 +61,13 @@ class ProductCategories(ViewSet):
         """Handle GET requests to ProductCategory resource"""
         product_category = ProductCategory.objects.all()
 
-        # Support filtering ProductCategorys by area id
-        # name = self.request.query_params.get('name', None)
-        # if name is not None:
-        #     ProductCategories = ProductCategories.filter(name=name)
+        category_id = self.request.query_params.get('category_id', None)
+        if category_id is not None:
+            product_category = product_category.filter(id=category_id)
+
+        name = self.request.query_params.get('name', None)
+        if name is not None:
+            product_category = product_category.filter(name=name)
 
         serializer = ProductCategorySerializer(
             product_category, many=True, context={"request": request}
