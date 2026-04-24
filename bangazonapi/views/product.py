@@ -19,9 +19,9 @@ from bangazonapi.models.productlike import ProductLike
 
 class ProductRatingSerializer(serializers.ModelSerializer):
     """JSON serializer for ratings"""
-
-    model = ProductRating
-    fields = ("id", "product", "customer", "score", "review")
+    class Meta:
+        model = ProductRating
+        fields = ("id", "product", "customer", "score", "review")
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -330,19 +330,21 @@ class Products(ViewSet):
 
         if request.method == "POST":
             try:
-                rec = Recommendation()
-                rec.recommender = Customer.objects.get(user=request.auth.user)
-                rec.customer = Customer.objects.get(
+                customer = Customer.objects.get(
                     user__username=request.data["username"]
                 )
-                rec.product = Product.objects.get(pk=pk)
-
-                rec.save()
-
-                return Response(None, status=status.HTTP_204_NO_CONTENT)
             except Customer.DoesNotExist:
-                return Response(None, status=status.HTTP_404_NOT_FOUND)
+                return Response("Customer Not Found", status=404)
+            
+            rec = Recommendation()
+            rec.recommender = Customer.objects.get(user=request.auth.user)
+            rec.customer = customer
+            rec.product = Product.objects.get(pk=pk)
 
+            rec.save()
+
+            return Response(None, status=status.HTTP_204_NO_CONTENT)
+    
         return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @action(methods=["post"], detail=True, url_path="rate-product")
