@@ -3,7 +3,7 @@
 from urllib import request
 from django.core.exceptions import ValidationError
 from rest_framework.decorators import action
-from bangazonapi.models.recommendation import Recommendation
+from bangazonapi.models import Rating, Recommendation, ProductRating
 import base64
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
@@ -17,8 +17,17 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.parsers import MultiPartParser, FormParser
 from bangazonapi.models.productlike import ProductLike
 
+class ProductRatingSerializer(serializers.ModelSerializer):
+    """JSON serializer for ratings"""
+    class Meta:
+        model = ProductRating
+        fields = ("id", "product", "customer", "score", "review")
+
+
 class ProductSerializer(serializers.ModelSerializer):
     """JSON serializer for products"""
+
+    ratings = ProductRatingSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
@@ -34,6 +43,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "image_path",
             "average_rating",
             "can_be_rated",
+            "ratings",
         )
         depth = 1
 
@@ -279,7 +289,7 @@ class Products(ViewSet):
         order = self.request.query_params.get("order_by", None)
         direction = self.request.query_params.get("direction", None)
         number_sold = self.request.query_params.get("number_sold", None)
-        # Support filtering by location 
+        # Support filtering by location
         location = self.request.query_params.get("location", None)
 
         if order is not None:
@@ -320,21 +330,47 @@ class Products(ViewSet):
 
         if request.method == "POST":
             try:
-                rec = Recommendation()
-                rec.recommender = Customer.objects.get(user=request.auth.user)
-                rec.customer = Customer.objects.get(
+                customer = Customer.objects.get(
                     user__username=request.data["username"]
                 )
-                rec.product = Product.objects.get(pk=pk)
+            except Customer.DoesNotExist:
+                return Response("Customer Not Found", status=404)
+            
+            rec = Recommendation()
+            rec.recommender = Customer.objects.get(user=request.auth.user)
+            rec.customer = customer
+            rec.product = Product.objects.get(pk=pk)
 
-                rec.save()
+            rec.save()
 
-                return Response(None, status=status.HTTP_204_NO_CONTENT)
-            except Customer.DoesNotExist as ex:
-                return Response(None, status=status.HTTP_404_NOT_FOUND)
-
-        return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            return Response(None, status=status.HTTP_204_NO_CONTENT)
     
+        return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    @action(methods=["post"], detail=True, url_path="rate-product")
+    def rate_product(self, request, pk=None):
+        """Add rating to a product"""
+
+        if request.method == "POST":
+            customer = Customer.objects.get(user=request.auth.user)
+            product = Product.objects.get(pk=pk)
+
+            """If rating does not exist, create a rating. """
+            try:
+                rate = ProductRating.objects.get(customer=customer, product=product)
+            except ProductRating.DoesNotExist:
+                rate = ProductRating()
+                rate.customer = customer
+                rate.product = product
+
+            rate.score = request.data["score"]
+            rate.review = request.data["review"]
+
+            rate.full_clean()
+            rate.save()
+            return Response(None, status=status.HTTP_201_CREATED)
+        return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
     @action(methods=["post", "delete"], detail=True)
     def like(self, request, pk=None):
         """
@@ -374,6 +410,7 @@ class Products(ViewSet):
                     {"message": "You have not liked this product."},
                     status=status.HTTP_404_NOT_FOUND
                 )
+
     @action(methods=["get"], detail=False)
     def liked(self, request):
         """

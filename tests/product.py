@@ -118,3 +118,21 @@ class ProductTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # TODO: Product can be rated. Assert average rating exists.
+
+    def test_rate_product(self):
+        """create a product"""
+        self.test_create_product()
+
+        """verify average_rating key exists"""
+        url = "/products/1"
+        response = self.client.get(url, None, format="json")
+        json_response = json.loads(response.content)
+        self.assertEqual(json_response["average_rating"], 0)
+
+        """ add ratings to product"""
+        # url = "products/1/rate-product"
+        # data = {"score": 3, "review": "blank"}
+
+        # self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
+        # response = self.client.post(url, data, format="json")
+        # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
