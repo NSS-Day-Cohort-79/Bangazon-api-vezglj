@@ -66,32 +66,40 @@ class Profile(ViewSet):
                 ],
                 "user_recommends": [
                     {
+                        "id": 3,
                         "product": {
-                            "id": 32,
-                            "name": "DB9"
+                            "id": 101,
+                            "name": "Scarf",
+                            "description": "Woolen scarf for cold weather",
+                            "price": 199.26,
+                            "image_path": "http://localhost:8000/media/products/scarf.png"
                         },
                         "customer": {
-                            "id": 5,
+                            "id": 6,
                             "user": {
-                                "first_name": "Joe",
-                                "last_name": "Shepherd",
-                                "email": "joe@joeshepherd.com"
+                                "first_name": "Jisie",
+                                "last_name": "David",
+                                "email": "jisie@jisiedavid.com"
                             }
                         }
                     }
                 ],
                 "recommended_to_user": [
                     {
+                        "id": 4,
                         "product": {
-                            "id": 32,
-                            "name": "DB9"
+                            "id": 113,
+                            "name": "Shorts",
+                            "description": "Athletic shorts for running",
+                            "price": 32.99,
+                            "image_path": "http://localhost:8000/media/products/shorts.png"
                         },
                         "recommender": {
-                            "id": 5,
+                            "id": 4,
                             "user": {
-                                "first_name": "Joe",
-                                "last_name": "Shepherd",
-                                "email": "joe@joeshepherd.com"
+                                "first_name": "Steve",
+                                "last_name": "Brownlee",
+                                "email": "steve@stevebrownlee.com"
                             }
                         }
                     }
@@ -381,10 +389,7 @@ class ProfileProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = (
-            "id",
-            "name",
-        )
+        fields = ("id", "name", "description", "price", "image_path")
 
 
 class RecommenderSerializer(serializers.ModelSerializer):
