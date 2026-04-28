@@ -396,9 +396,11 @@ class RecommenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recommendation
         fields = (
+            "id",
             "product",
             "customer",
         )
+        depth = 1
 
 
 class RecommendedSerializer(serializers.ModelSerializer):
@@ -410,9 +412,11 @@ class RecommendedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recommendation
         fields = (
+            "id",
             "product",
             "recommender",
         )
+        depth = 1
 
 
 class ProfileSerializer(serializers.ModelSerializer):
