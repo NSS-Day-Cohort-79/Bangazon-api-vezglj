@@ -1,0 +1,22 @@
+[
+  {
+    "model": "bangazonapi.store",
+    "pk": 1,
+    "fields": {
+      "name": "Brenda's store",
+      "description": "This is Brenda's store",
+      "created_date": "2026-04-21",
+      "owner_id": 8
+    }
+  },
+  {
+    "model": "bangazonapi.store",
+    "pk": 2,
+    "fields": {
+      "name": "Jisie's store",
+      "description": "This is Jisie's store",
+      "created_date": "2026-04-25",
+      "owner_id": 7
+    }
+  }
+]
