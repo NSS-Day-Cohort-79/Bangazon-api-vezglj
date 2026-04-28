@@ -48,7 +48,7 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
         total = 0
         for lineitem in obj.lineitems.all():
             total += lineitem.product.price
-        return total 
+        return round(total, 2)
 
 class Orders(ViewSet):
     """View for interacting with customer orders"""
