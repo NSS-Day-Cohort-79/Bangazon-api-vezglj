@@ -3,32 +3,32 @@
     "model": "bangazonapi.productlike",
     "pk": 1,
     "fields": {
-      "costumer_id": 4,
-      "product_id": 2
+      "customer": 4,
+      "product": 2
     }
   },
   {
     "model": "bangazonapi.productlike",
     "pk": 2,
     "fields": {
-      "costumer_id": 5,
-      "product_id": 3
+      "customer": 5,
+      "product": 3
     }
   },
   {
     "model": "bangazonapi.productlike",
     "pk": 3,
     "fields": {
-      "costumer_id": 6,
-      "product_id": 4
+      "customer": 6,
+      "product": 4
     }
   },
   {
     "model": "bangazonapi.productlike",
     "pk": 4,
     "fields": {
-      "costumer_id": 7,
-      "product_id": 5
+      "customer": 7,
+      "product": 5
     }
   }
 ]
