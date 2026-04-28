@@ -19,7 +19,7 @@
   },
   {
     "model": "bangazonapi.recommendation",
-    "pk": 1,
+    "pk": 3,
     "fields": {
       "customer_id": 6,
       "product_id": 101,
@@ -28,7 +28,7 @@
   },
   {
     "model": "bangazonapi.recommendation",
-    "pk": 1,
+    "pk": 4,
     "fields": {
       "customer_id": 7,
       "product_id": 113,
