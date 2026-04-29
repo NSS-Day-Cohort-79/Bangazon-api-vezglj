@@ -83,5 +83,5 @@ class StoreView(ViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = StoreSerializer(store, context={"request": request})
+        serializer = StoreSerializer(store, many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
