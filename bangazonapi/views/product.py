@@ -17,8 +17,10 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.parsers import MultiPartParser, FormParser
 from bangazonapi.models.productlike import ProductLike
 
+
 class ProductRatingSerializer(serializers.ModelSerializer):
     """JSON serializer for ratings"""
+
     class Meta:
         model = ProductRating
         fields = ("id", "product", "customer", "score", "review")
@@ -136,7 +138,9 @@ class Products(ViewSet):
         try:
             new_product.full_clean()
         except ValidationError as ex:
-            return Response({"message": ex.message_dict}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": ex.message_dict}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         new_product.save()
 
@@ -291,6 +295,7 @@ class Products(ViewSet):
         number_sold = self.request.query_params.get("number_sold", None)
         # Support filtering by location
         location = self.request.query_params.get("location", None)
+        min_price = self.request.query_params.get("min_price", None)
 
         if order is not None:
             order_filter = order
@@ -306,6 +311,9 @@ class Products(ViewSet):
 
         if quantity is not None:
             products = products.order_by("-created_date")[: int(quantity)]
+
+        if min_price is not None:
+            products = products.filter(price__gte=float(min_price))
 
         if number_sold is not None:
 
@@ -330,12 +338,10 @@ class Products(ViewSet):
 
         if request.method == "POST":
             try:
-                customer = Customer.objects.get(
-                    user__username=request.data["username"]
-                )
+                customer = Customer.objects.get(user__username=request.data["username"])
             except Customer.DoesNotExist:
                 return Response("Customer Not Found", status=404)
-            
+
             rec = Recommendation()
             rec.recommender = Customer.objects.get(user=request.auth.user)
             rec.customer = customer
@@ -344,7 +350,7 @@ class Products(ViewSet):
             rec.save()
 
             return Response(None, status=status.HTTP_204_NO_CONTENT)
-    
+
         return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @action(methods=["post"], detail=True, url_path="rate-product")
@@ -390,13 +396,12 @@ class Products(ViewSet):
 
         if request.method == "POST":
             _, created = ProductLike.objects.get_or_create(
-                customer=customer,
-                product=product
+                customer=customer, product=product
             )
             if not created:
                 return Response(
                     {"message": "You have already liked this product."},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             return Response(None, status=status.HTTP_204_NO_CONTENT)
 
@@ -408,7 +413,7 @@ class Products(ViewSet):
             except ProductLike.DoesNotExist:
                 return Response(
                     {"message": "You have not liked this product."},
-                    status=status.HTTP_404_NOT_FOUND
+                    status=status.HTTP_404_NOT_FOUND,
                 )
 
     @action(methods=["get"], detail=False)
@@ -433,5 +438,7 @@ class Products(ViewSet):
         """
         customer = Customer.objects.get(user=request.auth.user)
         liked_products = Product.objects.filter(likes__customer=customer)
-        serializer = ProductSerializer(liked_products, many=True, context={"request": request})
+        serializer = ProductSerializer(
+            liked_products, many=True, context={"request": request}
+        )
         return Response(serializer.data)
