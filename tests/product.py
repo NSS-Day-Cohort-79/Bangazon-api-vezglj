@@ -41,7 +41,7 @@ class ProductTests(APITestCase):
         url = "/products"
         data = {
             "name": "Kite",
-            "price": 14.99,
+            "price": 17500.00,
             "quantity": 60,
             "description": "It flies high",
             "category_id": 1,
@@ -53,7 +53,7 @@ class ProductTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(json_response["name"], "Kite")
-        self.assertEqual(json_response["price"], 14.99)
+        self.assertEqual(json_response["price"], 17500.00)
         self.assertEqual(json_response["quantity"], 60)
         self.assertEqual(json_response["description"], "It flies high")
         self.assertEqual(json_response["location"], "Pittsburgh")
