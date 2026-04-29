@@ -64,18 +64,42 @@ class Profile(ViewSet):
                         "customer": "http://localhost:8000/customers/7"
                     }
                 ],
-                "recommends": [
+                "user_recommends": [
                     {
+                        "id": 3,
                         "product": {
-                            "id": 32,
-                            "name": "DB9"
+                            "id": 101,
+                            "name": "Scarf",
+                            "description": "Woolen scarf for cold weather",
+                            "price": 199.26,
+                            "image_path": "http://localhost:8000/media/products/scarf.png"
                         },
                         "customer": {
-                            "id": 5,
+                            "id": 6,
                             "user": {
-                                "first_name": "Joe",
-                                "last_name": "Shepherd",
-                                "email": "joe@joeshepherd.com"
+                                "first_name": "Jisie",
+                                "last_name": "David",
+                                "email": "jisie@jisiedavid.com"
+                            }
+                        }
+                    }
+                ],
+                "recommended_to_user": [
+                    {
+                        "id": 4,
+                        "product": {
+                            "id": 113,
+                            "name": "Shorts",
+                            "description": "Athletic shorts for running",
+                            "price": 32.99,
+                            "image_path": "http://localhost:8000/media/products/shorts.png"
+                        },
+                        "recommender": {
+                            "id": 4,
+                            "user": {
+                                "first_name": "Steve",
+                                "last_name": "Brownlee",
+                                "email": "steve@stevebrownlee.com"
                             }
                         }
                     }
@@ -84,7 +108,12 @@ class Profile(ViewSet):
         """
         try:
             current_user = Customer.objects.get(user=request.auth.user)
-            current_user.recommends = Recommendation.objects.filter(recommender=current_user)
+            current_user.user_recommends = Recommendation.objects.filter(
+                recommender=current_user
+            )
+            current_user.recommended_to_user = Recommendation.objects.filter(
+                customer=current_user
+            )
 
             serializer = ProfileSerializer(
                 current_user, many=False, context={"request": request}
@@ -186,7 +215,6 @@ class Profile(ViewSet):
                     open_order, many=False, context={"request": request}
                 ).data
                 cart["order"]["size"] = len(cart["order"]["lineitems"])
-
 
             except Order.DoesNotExist as ex:
                 return Response(
@@ -361,14 +389,11 @@ class ProfileProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = (
-            "id",
-            "name",
-        )
+        fields = ("id", "name", "description", "price", "image_path")
 
 
 class RecommenderSerializer(serializers.ModelSerializer):
-    """JSON serializer for recommendations"""
+    """JSON serializer for recommendations by current user"""
 
     customer = CustomerSerializer()
     product = ProfileProductSerializer()
@@ -376,9 +401,27 @@ class RecommenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recommendation
         fields = (
+            "id",
             "product",
             "customer",
         )
+        depth = 1
+
+
+class RecommendedSerializer(serializers.ModelSerializer):
+    """JSON serializer for recommendations for current user"""
+
+    recommender = CustomerSerializer()
+    product = ProfileProductSerializer()
+
+    class Meta:
+        model = Recommendation
+        fields = (
+            "id",
+            "product",
+            "recommender",
+        )
+        depth = 1
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -389,7 +432,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     """
 
     user = UserSerializer(many=False)
-    recommends = RecommenderSerializer(many=True)
+    user_recommends = RecommenderSerializer(many=True)
+    recommended_to_user = RecommendedSerializer(many=True)
 
     class Meta:
         model = Customer
@@ -400,7 +444,8 @@ class ProfileSerializer(serializers.ModelSerializer):
             "phone_number",
             "address",
             "payment_types",
-            "recommends",
+            "user_recommends",
+            "recommended_to_user",
         )
         depth = 1
 

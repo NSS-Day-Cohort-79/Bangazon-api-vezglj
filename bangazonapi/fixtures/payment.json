@@ -31,5 +31,16 @@
       "expiration_date": "2020-03-01",
       "create_date": "2019-03-11"
     }
+  },
+  {
+    "model": "bangazonapi.payment",
+    "pk": 4,
+    "fields": {
+      "merchant_name": "Visa",
+      "account_number": "4fj9sofjw0g89434",
+      "customer_id": "4",
+      "expiration_date": "2020-01-01",
+      "create_date": "2019-11-11"
+    }
   }
 ]
