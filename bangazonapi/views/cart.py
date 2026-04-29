@@ -1,8 +1,10 @@
 """View module for handling requests about customer shopping cart"""
+
 import datetime
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import action
 from bangazonapi.models import Order, Customer, Product, OrderProduct
 from .product import ProductSerializer
 from .order import OrderSerializer
@@ -25,7 +27,8 @@ class Cart(ViewSet):
 
         try:
             open_order = Order.objects.get(
-                customer=current_user, payment_type__isnull=True)
+                customer=current_user, payment_type__isnull=True
+            )
         except Order.DoesNotExist as ex:
             open_order = Order()
             open_order.created_date = datetime.datetime.now()
@@ -39,7 +42,6 @@ class Cart(ViewSet):
 
         return Response({}, status=status.HTTP_204_NO_CONTENT)
 
-
     def destroy(self, request, pk=None):
         """
         @api {DELETE} /cart/:id DELETE line item from cart
@@ -51,17 +53,25 @@ class Cart(ViewSet):
             HTTP/1.1 204 No Content
         """
         current_user = Customer.objects.get(user=request.auth.user)
-        open_order = Order.objects.get(
-            customer=current_user, payment_type=None)
+        open_order = Order.objects.get(customer=current_user, payment_type=None)
 
-        line_item = OrderProduct.objects.filter(
-            product__id=pk,
-            order=open_order
-        )[0]
+        line_item = OrderProduct.objects.filter(product_id=pk, order=open_order)[0]
         line_item.delete()
 
         return Response({}, status=status.HTTP_204_NO_CONTENT)
+    
+    @action(methods=["delete"], detail=False)
+    def clear(self, request, pk=None):
+        """Delete cart with items in cart"""
 
+        current_user = Customer.objects.get(user=request.auth.user)
+        open_order = Order.objects.get(customer=current_user, payment_type=None)
+
+        order = OrderProduct.objects.filter(order=open_order)
+        order.delete()
+        open_order.delete()
+
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
 
     def list(self, request):
         """
@@ -109,25 +119,23 @@ class Cart(ViewSet):
         """
         current_user = Customer.objects.get(user=request.auth.user)
         try:
-            open_order = Order.objects.get(
-                customer=current_user, payment_type=None)
+            open_order = Order.objects.get(customer=current_user, payment_type=None)
 
-            products_on_order = Product.objects.filter(
-                lineitems__order=open_order)
+            products_on_order = Product.objects.filter(lineitems__order=open_order)
 
             serialized_order = OrderSerializer(
-                open_order, many=False, context={'request': request})
+                open_order, many=False, context={"request": request}
+            )
 
             product_list = ProductSerializer(
-                products_on_order, many=True, context={'request': request})
+                products_on_order, many=True, context={"request": request}
+            )
 
-            final = {
-                "order": serialized_order.data
-            }
+            final = {"order": serialized_order.data}
             final["order"]["products"] = product_list.data
             final["order"]["size"] = len(products_on_order)
 
         except Order.DoesNotExist as ex:
-            return Response({'message': ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(final["order"])

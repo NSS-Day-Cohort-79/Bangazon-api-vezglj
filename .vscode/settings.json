@@ -5,4 +5,11 @@
         "--django-settings-module=bangazon.settings",
         "--max-line-length=120"
     ],
+    "python-envs.defaultEnvManager": "ms-python.python:poetry",
+    "python-envs.defaultPackageManager": "ms-python.python:poetry",
+    "cSpell.words": [
+        "bangazonapi",
+        "paymenttypes",
+        "productcategories"
+    ],
 }
