@@ -120,6 +120,7 @@ class Orders(ViewSet):
         order = Order.objects.get(pk=pk, customer=customer)
         payment = Payment.objects.get(pk=request.data["payment_type"])
         order.payment_type = payment
+        order.completed_on = datetime.date.today()
         order.save()
 
         return Response({}, status=status.HTTP_204_NO_CONTENT)
