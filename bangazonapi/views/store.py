@@ -2,8 +2,8 @@ from rest_framework import serializers, status
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 
-from bangazonapi.models import Store, stores
-from bangazonapi.views import user
+from bangazonapi.models import Store, Customer, Product
+from bangazonapi.views.product import ProductSerializer
 
 
 class StoreSerializer(serializers.ModelSerializer):
