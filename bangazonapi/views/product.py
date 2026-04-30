@@ -297,40 +297,56 @@ class Products(ViewSet):
         location = self.request.query_params.get("location", None)
         min_price = self.request.query_params.get("min_price", None)
 
-        if order is not None:
-            order_filter = order
+        if any([category,quantity,order,direction,number_sold]):
+            if order is not None:
+                order_filter = order
 
-            if direction is not None:
-                if direction == "desc":
-                    order_filter = f"-{order}"
+                if direction is not None:
+                    if direction == "desc":
+                        order_filter = f"-{order}"
 
-            products = products.order_by(order_filter)
+                products = products.order_by(order_filter)
 
-        if category is not None:
-            products = products.filter(category__id=category)
+            if category is not None:
+                products = products.filter(category__id=category)
 
-        if quantity is not None:
-            products = products.order_by("-created_date")[: int(quantity)]
+            if quantity is not None:
+                products = products.order_by("-created_date")[: int(quantity)]
 
-        if min_price is not None:
-            products = products.filter(price__gte=float(min_price))
+            if min_price is not None:
+                products = products.filter(price__gte=float(min_price))
 
-        if number_sold is not None:
+            if number_sold is not None:
 
-            def sold_filter(product):
-                if product.number_sold >= int(number_sold):
-                    return True
-                return False
+                def sold_filter(product):
+                    if product.number_sold <= int(number_sold):
+                        return True
+                    return False
 
-            products = filter(sold_filter, products)
+                products = filter(sold_filter, products)
 
-        if location is not None:
-            products = products.filter(location__icontains=location)
+            serializer = ProductSerializer(
+                products, many=True, context={"request": request}
+            )
+            return Response([{
+                "category": "Products matching filters",
+                "products": serializer.data
+            }])
+        else:
+            grouped_products = []
+            categories = ProductCategory.objects.all()
 
-        serializer = ProductSerializer(
-            products, many=True, context={"request": request}
-        )
-        return Response(serializer.data)
+            for category in categories:
+                category_products = Product.objects.filter(category=category).order_by("-created_date")[:5]
+                serializer = ProductSerializer(
+                category_products, many=True, context={"request": request}
+                )
+                if category_products.exists():
+                    grouped_products.append({
+                    "category": category.name,
+                    "products": serializer.data
+               })
+            return Response(grouped_products)
 
     @action(methods=["post"], detail=True)
     def recommend(self, request, pk=None):
