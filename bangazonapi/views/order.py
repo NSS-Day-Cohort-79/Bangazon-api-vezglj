@@ -38,6 +38,7 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
             "id",
             "url",
             "created_date",
+            "completed_on",
             "payment_type",
             "customer",
             "lineitems",
