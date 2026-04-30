@@ -11,6 +11,12 @@ from bangazonapi.models import Order, Payment, Customer, Product, OrderProduct
 from .product import ProductSerializer
 
 
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ("id", "merchant_name")
+
+
 class OrderLineItemSerializer(serializers.HyperlinkedModelSerializer):
     """JSON serializer for line items"""
 
@@ -29,6 +35,7 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
     """JSON serializer for customer orders"""
 
     lineitems = OrderLineItemSerializer(many=True)
+    payment_type = PaymentSerializer()
     total = serializers.SerializerMethodField()
 
     class Meta:
