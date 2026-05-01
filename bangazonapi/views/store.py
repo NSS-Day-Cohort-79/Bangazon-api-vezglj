@@ -8,10 +8,12 @@ from bangazonapi.views.product import ProductSerializer
 
 class StoreSerializer(serializers.ModelSerializer):
     seller = serializers.SerializerMethodField()
+    products = serializers.SerializerMethodField()
+    product_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Store
-        fields = ("id", "name", "description", "created_date", "seller")
+        fields = ("id", "name", "description", "created_date", "seller", "product_count", "products")
 
     def get_seller(self, obj):
         owner = getattr(obj, "owner", None)
@@ -26,6 +28,15 @@ class StoreSerializer(serializers.ModelSerializer):
             "first_name": getattr(owner, "first_name", ""),
             "last_name": getattr(owner, "last_name", ""),
         }
+
+    def get_product_count(self, obj):
+        customer = Customer.objects.get(user=obj.owner)
+
+        return Product.objects.filter(customer=customer).count()
+
+
+
+
 
 
 class StoreView(ViewSet):
