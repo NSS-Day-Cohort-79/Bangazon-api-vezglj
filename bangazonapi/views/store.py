@@ -34,7 +34,12 @@ class StoreSerializer(serializers.ModelSerializer):
 
         return Product.objects.filter(customer=customer).count()
 
+    def get_products(self, obj):
+        customer = Customer.objects.get(user=obj.owner)
+        owner_products = Product.objects.filter(customer=customer)
 
+        serializer = ProductSerializer(owner_products, many=True, context={"request": self.context.get("request")})
+        return serializer.data
 
 
 
